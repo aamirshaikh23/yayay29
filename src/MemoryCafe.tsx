@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import type { Room } from './studioModel';
 import { birthdayConfig } from './birthdayConfig';
 import { CafeMark, CakeArt, DrinkArt, IngredientArt } from './CafeArtwork';
 import CafeHost from './CafeHost';
@@ -37,7 +38,9 @@ function CafeDialog({ title, children, onClose }: { title: string; children: Rea
   );
 }
 
-export default function MemoryCafe({ background }: { background: ReactNode }) {
+export default function MemoryCafe({ background, onExit, appearanceRoom, appearanceControls }: {
+  background: ReactNode; onExit?: () => void; appearanceRoom?: Room; appearanceControls?: ReactNode;
+}) {
   const [restored] = useState(loadGame);
   const [game, dispatch] = useReducer(cafeReducer, restored.state);
   const [notice, setNotice] = useState(restored.notice);
@@ -95,13 +98,21 @@ export default function MemoryCafe({ background }: { background: ReactNode }) {
   const reset = () => { dispatch({ type: 'RESTART' }); setModal(null); };
   const missing = receipt ? order.recipe.filter((id) => !receipt.cup.includes(id)) : [];
   const extra = receipt ? receipt.cup.filter((id) => !order.recipe.includes(id)) : [];
+  const appearanceStyle: (CSSProperties & Record<`--memory-${string}`, string>) | undefined = appearanceRoom ? {
+    '--memory-wall': appearanceRoom.wall,
+    '--memory-floor': appearanceRoom.floor,
+    '--memory-accent': appearanceRoom.facade,
+    '--memory-trim': appearanceRoom.trim,
+  } : undefined;
 
   return (
-    <main className={`memory-cafe memory-cafe--${game.screen}`}>
+    <main className={`memory-cafe memory-cafe--${game.screen}${appearanceRoom ? ' memory-cafe--designed' : ''}`} style={appearanceStyle}>
       <header className="cafe-header">
         <div className="cafe-brand"><CafeMark /><span>Good Sarah,<br /><strong>Great Sarah</strong></span></div>
-        <div className="header-note">a birthday café, just for you</div>
+        <div className="header-note">{appearanceRoom ? `${appearanceRoom.name || 'Your cafe'} / designed by Sarah` : 'a birthday café, just for you'}</div>
         <div className="header-actions">
+          {onExit && <button className="small-button game-exit-button" onClick={onExit}>Games</button>}
+          {appearanceControls}
           <BackgroundMusic />
           <button className="small-button" onClick={openBook}>Memory book <span aria-hidden="true">✧</span></button>
           <button className="icon-button" onClick={() => setModal(game.screen === 'play' ? 'pause' : 'restart')} aria-label={game.screen === 'play' ? 'Pause game' : 'Start a new game'}>{game.screen === 'play' ? 'Ⅱ' : '↺'}</button>
