@@ -23,7 +23,7 @@ export function moveInScene(item: Furnishing, dx: number, dy: number, room: Room
 
 const wallKinds = new Set(['window', 'art', 'mirror', 'menu', 'sign', 'clock', 'sconce', 'shelf']);
 const tableKinds = new Set(['table', 'dining', 'side', 'outdoor', 'coffeetable']);
-const accessoryKinds = new Set(['machine', 'grinder', 'display', 'sink', 'cups', 'vase', 'books', 'cushion', 'kettle', 'dripper', 'toaster', 'tray', 'candle', 'sculpture', 'recordplayer', 'tablelamp']);
+const accessoryKinds = new Set(['machine', 'grinder', 'display', 'sink', 'cups', 'vase', 'books', 'cushion', 'kettle', 'dripper', 'toaster', 'tray', 'candle', 'sculpture', 'recordplayer', 'tablelamp', 'desklamp']);
 
 export function furnishingHeight(item: Furnishing): number {
   const heights: Record<string, number> = {
@@ -37,7 +37,7 @@ export function furnishingHeight(item: Furnishing): number {
   };
   const entry = catalog.find((entry) => entry.kind === item.kind);
   const scale = entry ? Math.sqrt(item.width * item.depth / (entry.width * entry.depth)) : 1;
-  return (heights[item.kind] ?? heights[furnishingRole(item.kind)] ?? 80) * scale;
+  return (entry?.height ?? heights[item.kind] ?? heights[furnishingRole(item.kind)] ?? 80) * scale;
 }
 
 export function scenePlacement(item: Furnishing, design: Design) {
@@ -46,12 +46,14 @@ export function scenePlacement(item: Furnishing, design: Design) {
   const yaw = Math.max(.25, Math.abs(Math.cos(angle)) + Math.abs(Math.sin(angle)) * .45);
   const width = Math.max(12, item.width * floor.scale * yaw);
   const height = furnishingHeight(item) * floor.scale * 1.25;
+  const role = furnishingRole(item.kind);
   let base = floor.y;
-  if (wallKinds.has(item.kind)) base -= (item.kind === 'window' || item.kind === 'shelf' ? 35 : 100) * floor.scale;
-  if (item.kind === 'pendant') base = 125 + item.y / design.room.depth * 65;
-  if (accessoryKinds.has(item.kind)) {
+  const freestanding = ['menustand', 'chalkboard'].includes(item.kind);
+  if (wallKinds.has(role) && !freestanding) base -= (role === 'window' || role === 'shelf' ? 35 : 100) * floor.scale;
+  if (role === 'pendant') base = 125 + item.y / design.room.depth * 65;
+  if ((accessoryKinds.has(item.kind) || accessoryKinds.has(role) || item.kind === 'menustand' || role === 'tablelamp') && item.kind !== 'outdoorlantern') {
     const support = [...design.items].reverse().find((other) => !other.hidden && other.id !== item.id
-      && (other.kind === 'counter' || tableKinds.has(other.kind) || (item.kind === 'cushion' && ['sofa', 'bench', 'armchair'].includes(other.kind)))
+      && (furnishingRole(other.kind) === 'counter' || tableKinds.has(furnishingRole(other.kind)) || (role === 'cushion' && ['sofa', 'bench', 'armchair'].includes(furnishingRole(other.kind))))
       && Math.abs(other.x - item.x) <= other.width / 2 && Math.abs(other.y - item.y) <= other.depth / 2);
     if (support) base -= furnishingHeight(support) * floor.scale * 1.25 * .82;
   }
