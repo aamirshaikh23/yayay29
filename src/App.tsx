@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import CafeScene from './CafeScene';
 import MemoryCafe from './MemoryCafe';
 import CafeStudio from './CafeStudio';
@@ -7,6 +7,7 @@ import { createDesign, decodeMemoryDesign, MEMORY_DESIGN_KEY, publishDesign } fr
 import type { Design, MemoryDesignSetting } from './studioModel';
 
 const preview = createDesign();
+const Cafe3D = lazy(() => import('./Cafe3D'));
 
 function loadMemoryDesign(): { setting: MemoryDesignSetting | null; error: string } {
   try {
@@ -42,7 +43,7 @@ export default function App() {
   };
   const notice = appearanceNotice && <div className="studio-notice" role="alert"><p>{appearanceNotice}</p><button aria-label="Dismiss appearance notice" onClick={() => setAppearanceNotice('')}>x</button></div>;
   if (game === 'memory') return <>{notice}<MemoryCafe
-    background={activeDesign ? <DesignScene design={activeDesign} className="cafe-room-art" /> : <CafeScene />}
+    background={activeDesign ? <Suspense fallback={<DesignScene design={activeDesign} className="cafe-room-art" />}><Cafe3D design={activeDesign} backdrop onError={setAppearanceNotice} /></Suspense> : <CafeScene />}
     appearanceRoom={activeDesign?.room}
     appearanceControls={memoryDesign && <button className="small-button game-appearance-button" aria-pressed={memoryDesign.enabled} onClick={() => {
       const error = saveAppearance({ ...memoryDesign, enabled: !memoryDesign.enabled });
