@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import type { KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { FurnishingArt, PlacedFurnishing, RoomArtwork, RoomAtmosphere } from './StudioArtwork';
+import { MaterialSample, materialDescriptions } from './MaterialFinish';
 import {
   applyTheme, briefChecks, briefs, catalog, categories, createDesign, decodeStudioSave, designStats, fitItem,
   floorStyles, fonts, furnishingRole, historyReducer, materials, MAX_ITEMS, newItem, patterns, resizeRoom, STUDIO_KEY, themes, wallStyles,
@@ -275,8 +276,9 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
       <p className="studio-hint">Each piece has its own finish. Material changes the surface texture; use the two colors for upholstery/body and frame/accents.</p>
       <div className="studio-color-pair"><ColorField label="Main finish" value={selected.color} onChange={(color) => patchItem({ color })} /><ColorField label="Accent / frame" value={selected.accent} onChange={(accent) => patchItem({ accent })} /></div>
       <SelectField label="Material" value={selected.material} options={materials} onChange={(material) => patchItem({ material })} />
-      <div className="studio-materials" aria-label="Material samples">{materials.map((material) => <button key={material} aria-pressed={selected.material === material} onClick={() => patchItem({ material })}>
-        <span><FurnishingArt item={{ ...selected, kind: 'cushion', material, pattern: 'Plain' }} /></span>{material}
+      <p className="studio-hint" role="status">{selected.material}: {materialDescriptions[selected.material]}. Colors remain editable; metal, stone, and glass add their characteristic tint and reflections.</p>
+      <div className="studio-materials" aria-label="Material samples">{materials.map((material) => <button key={material} title={materialDescriptions[material]} aria-pressed={selected.material === material} onClick={() => patchItem({ material })}>
+        <span><MaterialSample material={material} color={selected.color} accent={selected.accent} /></span>{material}
       </button>)}</div>
       <SelectField label="Surface pattern" value={selected.pattern} options={patterns} onChange={(pattern) => patchItem({ pattern })} />
       <label className="studio-field"><span>Object name</span><input value={selected.name} maxLength={60} onChange={(event) => patchItem({ name: event.target.value })} /></label>
