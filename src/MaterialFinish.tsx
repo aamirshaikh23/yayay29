@@ -71,10 +71,10 @@ export function MaterialDefs({ id, material, color, accent, pattern = 'Plain' }:
   </defs>;
 }
 
-export function MaterialSample({ material, color, accent }: { material: Material; color: string; accent: string }) {
+export function MaterialSample({ material, color, accent, seamless = false, pattern = 'Plain' }: { material: Material; color: string; accent: string; seamless?: boolean; pattern?: Pattern }) {
   const id = useId().replace(/:/g, '');
   return <svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true">
-    <MaterialDefs id={id} material={material} color={color} accent={accent} />
-    <rect x="2" y="2" width="96" height="96" rx="9" fill={`url(#surface-${id})`} stroke="#564c3e" strokeOpacity=".25" />
+    <MaterialDefs id={id} material={material} color={color} accent={accent} pattern={pattern} />
+    {seamless ? <rect width="100" height="100" fill={`url(#surface-${id})`} /> : <rect x="2" y="2" width="96" height="96" rx="9" fill={`url(#surface-${id})`} stroke="#564c3e" strokeOpacity=".25" />}
   </svg>;
 }
