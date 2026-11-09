@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useReducer, useRef, useState } from 'react';
 import type { KeyboardEvent, PointerEvent, ReactNode } from 'react';
 import { FurnishingArt, PlacedFurnishing, RoomArtwork, RoomAtmosphere } from './StudioArtwork';
 import { MaterialSample, materialDescriptions } from './MaterialFinish';
@@ -8,7 +8,11 @@ import {
 } from './studioModel';
 import type { Category, Design, Furnishing, Room, SavedDesign, StudioSave } from './studioModel';
 import { moveInScene, scenePlacement, SCENE_HEIGHT, SCENE_VIEWBOX, SCENE_WIDTH } from './studioView';
+import { height3d } from './studio3dModel';
+import type { Cafe3DHandle } from './Cafe3D';
 import './studio.css';
+
+const Cafe3D = lazy(() => import('./Cafe3D'));
 
 function loadStudio(): { save: StudioSave; error: string } {
   try {
@@ -94,6 +98,8 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
   const [cleanPreview, setCleanPreview] = useState(false);
   const [showLights, setShowLights] = useState(true);
   const [expanded, setExpanded] = useState(false);
+  const [view3d, setView3d] = useState(true);
+  const threeRef = useRef<Cafe3DHandle | null>(null);
   const selected = design.items.find((item) => item.id === selectedId);
   const stats = designStats(design);
   const checks = briefChecks(design, activeBrief);
@@ -127,7 +133,7 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
   const addItem = (kind: string) => {
     if (design.items.length >= MAX_ITEMS) { setNotice(`This design has reached its ${MAX_ITEMS}-object limit. Remove an object to add another.`); return; }
     const item = fitItem(newItem(kind, crypto.randomUUID(), room.width / 2 + (design.items.length % 5) * 12, room.depth / 2), room, snap);
-    edit({ ...design, items: kind === 'rug' ? [item, ...design.items] : [...design.items, item] });
+    edit({ ...design, items: furnishingRole(kind) === 'rug' ? [item, ...design.items] : [...design.items, item] });
     setSelectedId(item.id);
     setCleanPreview(false);
   };
@@ -192,7 +198,7 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
     if (panRef.current?.pointerId === event.pointerId) panRef.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   };
-  const stageKeys = (event: KeyboardEvent<SVGSVGElement>) => {
+  const stageKeys = (event: KeyboardEvent<SVGSVGElement | HTMLDivElement>) => {
     if (event.key === 'Escape') { setSelectedId(null); setDrag(null); dragRef.current = null; }
     if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
       event.preventDefault(); if (event.shiftKey) redo(); else undo(); return;
@@ -215,6 +221,11 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
   const fileName = room.name.replace(/[^a-z0-9 -]/gi, '').trim() || 'my-cafe';
   const exportBackup = () => download(new Blob([JSON.stringify({ version: 1, current: design, slots } satisfies StudioSave, null, 2)], { type: 'application/json' }), `${fileName}.json`);
   const exportPicture = () => {
+    if (view3d) {
+      if (threeRef.current) threeRef.current.exportPng();
+      else setNotice('The 3D scene is still loading. Try again when it opens, or switch to Illustrated for an SVG export.');
+      return;
+    }
     if (!svgRef.current) return;
     const clone = svgRef.current.cloneNode(true) as SVGSVGElement;
     clone.querySelectorAll('[data-editor]').forEach((element) => element.remove());
@@ -287,8 +298,13 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
       <NumberField label="Distance from back wall" value={selected.y} min={0} max={room.depth} unit="cm" onChange={(y) => patchItem({ y })} />
       <NumberField label="Width" value={selected.width} min={10} max={350} unit="cm" onChange={(width) => patchItem({ width })} />
       <NumberField label="Depth" value={selected.depth} min={10} max={300} unit="cm" onChange={(depth) => patchItem({ depth })} />
+      {view3d && <>
+        <NumberField label="Height" value={Math.min(350, height3d(selected) * 100)} min={5} max={350} unit="cm" onChange={(height) => patchItem({ height })} />
+        <NumberField label="Extra elevation" value={selected.elevation ?? 0} min={0} max={300} unit="cm" onChange={(elevation) => patchItem({ elevation })} />
+        <p className="studio-hint">Height and elevation affect the 3D model. Cups and equipment sit on overlapping tables/counters automatically; extra elevation is added on top.</p>
+      </>}
       <NumberField label="Facing direction" value={selected.rotation} min={0} max={360} unit="deg" onChange={(rotation) => patchItem({ rotation })} />
-      <p className="studio-hint">Facing changes the visible width and side of the illustration, not its upright angle. Rugs rotate along the floor.</p>
+      <p className="studio-hint">{view3d ? 'Facing rotates the actual model around its vertical axis. Drag a piece to move it; use Orbit / Pan to navigate without moving furniture.' : 'Facing changes the visible width and side of the illustration, not its upright angle. Rugs rotate along the floor.'}</p>
       <SelectField label="Silhouette" value={selected.shape} options={['Rounded', 'Square', 'Round']} onChange={(shape) => patchItem({ shape })} />
       <NumberField label="Decorative detail" value={selected.detail} min={0} max={100} unit="%" onChange={(detail) => patchItem({ detail })} />
       <NumberField label="Opacity" value={selected.opacity} min={15} max={100} unit="%" onChange={(opacity) => patchItem({ opacity })} />
@@ -297,14 +313,14 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
         <NumberField label="Fixture brightness" value={selected.lightPower} min={0} max={100} unit="%" onChange={(lightPower) => patchItem({ lightPower })} />
         <NumberField label="Fixture warmth" value={selected.lightWarmth} min={0} max={100} unit="%" onChange={(lightWarmth) => patchItem({ lightWarmth })} />
       </>}
-      {['sign', 'menu'].includes(selected.kind) && <>
+      {['sign', 'menu'].includes(furnishingRole(selected.kind)) && <>
         <h4>Make it personal</h4>
         <label className="studio-field"><span>Lettering (up to 7 lines)</span><textarea rows={4} maxLength={200} value={selected.text} onChange={(event) => patchItem({ text: event.target.value })} /></label>
         <SelectField label="Lettering style" value={selected.font} options={fonts} onChange={(font) => patchItem({ font })} />
       </>}
       <h4>Layer order</h4>
       <div className="studio-object-actions"><button onClick={() => reorder(-1)} disabled={design.items[0]?.id === selected.id}>Move backward</button><button onClick={() => reorder(1)} disabled={design.items.at(-1)?.id === selected.id}>Move forward</button></div>
-      <p className="studio-hint">Place rugs underneath furniture, cups on tables, and equipment on counters. Layer order is manual so you stay in control.</p>
+      <p className="studio-hint">Layer order controls the illustrated view. In 3D, actual depth and height determine visibility; place rugs on the floor and accessories on supporting furniture.</p>
     </fieldset>
   </> : <div className="studio-empty-inspector"><span className="studio-empty-symbol" aria-hidden="true">+</span><h3>A place for every detail.</h3><p>Select a piece in the room or in Layers to make it yours. Every object has its own colors, size, material, and pattern.</p><button onClick={() => setTab('Objects')}>Find something lovely</button></div>;
 
@@ -331,7 +347,7 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
         {tab === 'Objects' && <>
           <div className="studio-panel-title"><div><span className="studio-kicker">The collection</span><h2>Find your next detail.</h2></div><span>{catalog.length} pieces</span></div>
           <label className="studio-search"><span className="sr-only">Search furnishings</span><input type="search" placeholder="Search furniture, plants, coffee..." value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-          <div className="studio-categories" aria-label="Object categories">{categories.map((name) => <button key={name} aria-pressed={!search && category === name} onClick={() => { setCategory(name); setSearch(''); }}>{name}</button>)}</div>
+          <div className="studio-categories" aria-label="Object categories">{categories.map((name) => <button key={name} aria-pressed={!search && category === name} onClick={() => { setCategory(name); setSearch(''); }}>{name} <span>({catalog.filter((entry) => entry.category === name).length})</span></button>)}</div>
           <p className="studio-hint">Tap a piece to add it. Drag it into place, then tailor every finish.</p>
           <div className="studio-catalog">{matchingCatalog.map((entry) => <button key={entry.kind} className="studio-catalog-card" onClick={() => addItem(entry.kind)} disabled={design.items.length >= MAX_ITEMS}>
             <span className="studio-catalog-art"><FurnishingArt item={newItem(entry.kind, `catalog-${entry.kind}`, 0, 0)} /></span><strong>{entry.name}</strong><small>${entry.price.toLocaleString()} <span aria-hidden="true">+</span></small>
@@ -382,13 +398,18 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
       </aside>
 
       <section className="studio-drawing" aria-label="Cafe design canvas">
-        <div className="studio-drawing-heading"><div><span className="studio-kicker">Your cafe / front-facing interior</span><h2>{room.name || 'Untitled cafe'}</h2></div><span className="studio-plan-badge">{room.night ? 'Evening' : 'Daylight'}</span></div>
+        <div className="studio-drawing-heading"><div><span className="studio-kicker">Your cafe / {view3d ? 'real 3D interior' : 'illustrated interior'}</span><h2>{room.name || 'Untitled cafe'}</h2></div><span className="studio-plan-badge">{room.night ? 'Evening' : 'Daylight'}</span></div>
         <div className="studio-toolbar" aria-label="Canvas tools">
+          <div><button aria-pressed={view3d} onClick={() => setView3d(true)}>3D view</button><button aria-pressed={!view3d} onClick={() => setView3d(false)}>Illustrated</button></div>
           <div><button onClick={undo} disabled={!history.past.length || Boolean(drag)}>Undo</button><button onClick={redo} disabled={!history.future.length || Boolean(drag)}>Redo</button></div>
-          <div><button aria-pressed={panMode} onClick={() => setPanMode(!panMode)}>Pan</button><button aria-pressed={grid} onClick={() => setGrid(!grid)}>Grid</button><button aria-pressed={snap} onClick={() => setSnap(!snap)}>Snap 10 cm</button></div>
+          <div><button aria-pressed={panMode} onClick={() => setPanMode(!panMode)}>{view3d ? 'Orbit / Pan' : 'Pan'}</button><button aria-pressed={grid} onClick={() => setGrid(!grid)}>Grid</button><button aria-pressed={snap} onClick={() => setSnap(!snap)}>Snap 10 cm</button></div>
           <div><button aria-pressed={cleanPreview} onClick={() => setCleanPreview(!cleanPreview)}>Preview</button><button aria-pressed={showLights} onClick={() => setShowLights(!showLights)}>Lights layer</button><button aria-pressed={expanded} onClick={() => setExpanded(!expanded)}>{expanded ? 'Show panels' : 'Expand canvas'}</button></div>
         </div>
-        <div className={`studio-stage${panMode ? ' studio-stage--pan' : ''}`}>
+        <div className={`studio-stage${panMode ? ' studio-stage--pan' : ''}`} tabIndex={view3d ? 0 : undefined} onKeyDown={view3d ? stageKeys : undefined} aria-label={view3d ? '3D cafe editor. Arrow keys move the selected object, R rotates, Delete removes.' : undefined}>
+          {view3d ? <Suspense fallback={<div className="studio-three-loading" role="status">Opening your 3D cafe...</div>}>
+            <Cafe3D design={design} selectedId={selectedId} onSelect={setSelectedId} onMove={(item) => edit({ ...design, items: design.items.map((entry) => entry.id === item.id ? item : entry) })}
+              onError={setNotice} snap={snap} grid={grid} preview={cleanPreview} orbit={panMode} showLights={showLights} handleRef={threeRef} />
+          </Suspense> : <>
           <svg ref={svgRef} viewBox={`${viewX} ${viewY} ${viewWidth} ${viewHeight}`} tabIndex={0} role="group" aria-label="Editable front-facing cafe interior. Select objects using Layers or click a piece. Arrow keys move the selected object, R changes its facing direction, Delete removes."
             onKeyDown={stageKeys} onPointerDown={(event) => {
               if (event.button !== 0 || dragRef.current) return;
@@ -407,14 +428,16 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
             </g>)}
             <RoomAtmosphere room={room} />
             {!cleanPreview && selectedPreview && selectionBounds && !selectedPreview.hidden && (showLights || !isCeiling(selectedPreview)) && <g data-editor="true" pointerEvents="none" transform={`translate(${selectionBounds.x} ${selectionBounds.y})`}>
-              {selectedPreview.kind === 'rug' ? <ellipse rx={Math.max(selectionBounds.width, selectedPreview.depth * selectionBounds.scale) / 2 + 8} ry={Math.max(selectionBounds.width, selectedPreview.depth * selectionBounds.scale) * .18 + 5} fill="none" stroke="#31594f" strokeWidth="2" strokeDasharray="5 4" />
+              {furnishingRole(selectedPreview.kind) === 'rug' ? <ellipse rx={Math.max(selectionBounds.width, selectedPreview.depth * selectionBounds.scale) / 2 + 8} ry={Math.max(selectionBounds.width, selectedPreview.depth * selectionBounds.scale) * .18 + 5} fill="none" stroke="#31594f" strokeWidth="2" strokeDasharray="5 4" />
                 : <rect x={-selectionBounds.width / 2 - 5} y={-selectionBounds.height - 5} width={selectionBounds.width + 10} height={selectionBounds.height + 10} rx="4" fill="none" stroke="#31594f" strokeWidth="2" strokeDasharray={selectedPreview.locked ? '5 4' : undefined} vectorEffect="non-scaling-stroke" />}
               <circle r="5" fill="#fff9e8" stroke="#31594f" strokeWidth="2" />
             </g>}
           </svg>
           <div className="studio-zoom"><button onClick={() => setZoom(Math.max(.5, Math.round((zoom - .25) * 100) / 100))} disabled={zoom <= .5} aria-label="Zoom out">-</button><output aria-label="Zoom level">{Math.round(zoom * 100)}%</output><button onClick={() => setZoom(Math.min(3, zoom + .25))} disabled={zoom >= 3} aria-label="Zoom in">+</button><button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }}>Fit</button></div>
+          </>}
           {cleanPreview && <span className="studio-preview-label">Preview mode - turn off to edit</span>}
         </div>
+        {view3d && <p className="studio-hint">Drag furniture to move it. Drag empty space to orbit; right-drag to pan; scroll or pinch to zoom. Two fingers pan on touch. Orbit / Pan prevents accidental object moves. Choose a camera preset to reframe.</p>}
         <div className="studio-canvas-footer"><span>{panMode ? 'Drag the canvas to explore.' : selected ? `${selected.name} selected. Drag to move; edit in Details.` : 'A blank corner is a new possibility. Select a piece to begin.'}</span>{selected && <button className="studio-primary" onClick={openMaterials}>Edit materials</button>}<button onClick={exportPicture}>Export picture</button></div>
         <div className="studio-stats"><div><strong>{stats.area}</strong><span>square meters</span></div><div><strong>{stats.seats}</strong><span>guest seats</span></div><div><strong>${stats.cost.toLocaleString()}</strong><span>concept cost</span></div><div><strong>{design.items.length}</strong><span>little details</span></div></div>
         <div className={`studio-active-brief${complete ? ' is-complete' : ''}`} role="status"><span className="studio-kicker">{complete ? 'Brief complete' : 'Currently creating'}</span><strong>{currentBrief.name}</strong>{checks.length ? <span>{checks.filter((check) => check.done).length} / {checks.length} goals met</span> : <span>Unlimited imagination. Always.</span>}</div>
@@ -436,20 +459,20 @@ export default function CafeStudio({ onExit, onApplyDesign }: { onExit: () => vo
       <button className="studio-primary" onClick={newConcept} disabled={slots.length >= 6}>Save as a new concept ({slots.length}/6)</button>
       {slots.length >= 6 && <p className="studio-hint">Your journal is full. Replace or delete a concept, or export a backup first.</p>}
       <div className="studio-saved-list">{slots.map((slot) => <article key={slot.id}><div className="studio-saved-swatch" style={{ background: slot.design.room.floor, borderColor: slot.design.room.wall }} /><div><h3>{slot.name}</h3><small>{slot.design.items.length} objects / {designStats(slot.design).area} m2</small><div className="studio-object-actions"><button onClick={() => loadConcept(slot)}>Open</button><button onClick={() => setConfirmation({ title: `Replace ${slot.name}?`, description: 'The current design will replace this saved concept. Other concepts stay unchanged.', label: 'Replace concept', run: () => setSlots(slots.map((entry) => entry.id === slot.id ? { ...entry, name: conceptName.trim() || room.name || entry.name, design } : entry)) })}>Replace</button><button onClick={() => setConfirmation({ title: `Delete ${slot.name}?`, description: 'This removes the named concept, not your open design. This action cannot be undone. Export a backup if you want to keep a copy.', label: 'Delete concept', run: () => setSlots(slots.filter((entry) => entry.id !== slot.id)) })}>Delete</button></div></div></article>)}</div>
-      <h4>Keep it forever</h4><div className="studio-object-actions"><button onClick={exportBackup}>Export JSON backup</button><button onClick={() => fileRef.current?.click()}>Import JSON backup</button><button onClick={exportPicture}>Export SVG picture</button></div>
-      <p className="studio-hint">Backups include the open design and all concepts. SVG pictures can be opened in a browser or design software. Browser storage can be cleared; a downloaded backup is your safest copy.</p>
+      <h4>Keep it forever</h4><div className="studio-object-actions"><button onClick={exportBackup}>Export JSON backup</button><button onClick={() => fileRef.current?.click()}>Import JSON backup</button><button onClick={exportPicture}>Export {view3d ? '3D PNG' : 'SVG'} picture</button></div>
+      <p className="studio-hint">Backups include the open design and all concepts. PNG exports the current 3D camera without guides; Illustrated exports SVG. Pictures are not editable backups. Browser storage can be cleared; a downloaded JSON backup is your safest copy.</p>
     </Dialog>}
     <input className="studio-file-input" type="file" accept=".json,application/json" ref={fileRef} aria-label="Import studio backup" onChange={(event) => { const file = event.target.files?.[0]; if (file) void importFile(file); event.target.value = ''; }} />
     {showHelp && <Dialog title="Welcome to your atelier" onClose={() => setShowHelp(false)}>
       <div className="studio-help"><p><strong>1. Make a mood.</strong> Start with a theme or create your own palette in Room. Themes keep your layout and can be undone.</p>
         <p><strong>2. Fill it with lovely things.</strong> Tap objects in the collection, drag them into place, and open Details to change dimensions, rotation, colors, materials, patterns, and lettering.</p>
-        <p><strong>3. Layer the little details.</strong> Add cups on tables, equipment on counters, and cushions on sofas. Use Layers to find covered pieces; move objects forward or backward in Details. Lock finished pieces.</p>
-        <p><strong>4. See the whole picture.</strong> The room faces you, with upright furniture and a receding floor. Drag up to move deeper into the room and down to bring pieces forward. Turn off the Lights layer to work underneath ceiling fixtures. Expand canvas hides the panels; choose a tool tab to bring them back. Use Preview for a clean view, and Pan or zoom to explore.</p>
+        <p><strong>3. Style in three dimensions.</strong> Add cups on tables, equipment on counters, and cushions on sofas. Accessories sit on supporting furniture automatically. Edit width, depth, height, elevation, and true rotation in Details. Use Layers to find covered pieces and lock finished pieces. Layer ordering affects only the Illustrated view; 3D uses actual depth.</p>
+        <p><strong>4. See the whole picture.</strong> Drag furniture to move it. Drag empty space to orbit, right-drag to pan, and scroll or pinch to zoom. Two fingers pan on touch. Orbit / Pan prevents accidental moves. Front, Perspective, Overhead, and Reset camera reframe the room. Turn off the Lights layer to work underneath fixtures. Expand canvas hides the panels; choose a tool tab to bring them back. Preview hides selection guides and disables object editing. Illustrated retains the original drawing tools and SVG exports.</p>
         <p><strong>5. Play or just create.</strong> Briefs offer optional measurable goals. There is no timer, and free design has no budget restriction.</p>
-        <p><strong>6. Keep your favorites.</strong> My concepts holds six designs. Export JSON for an editable backup, or SVG for a picture. Saves stay on this browser, not in an online account.</p>
+        <p><strong>6. Keep your favorites.</strong> My concepts holds six designs. Export JSON for an editable backup, PNG for the current 3D camera, or SVG from Illustrated. Saves stay on this browser, not in an online account. Camera positions are not saved.</p>
         <p><strong>7. Play inside your design.</strong> Use in Memory Cafe publishes a snapshot of this room and opens the quiz with your layout and a matching interface palette. Reapply after editing to update it. In Memory Cafe, switch between My design and Original cafe without losing progress.</p>
         <h3>Keyboard, without dragging</h3><p>Select a piece in Layers, then focus the drawing: arrow keys move 1 cm, Shift + arrows move 10 cm, R rotates 15 degrees, Delete removes, and Escape deselects. Ctrl / Command + Z undoes; add Shift to redo. All measurements can also be typed in Details.</p>
-        <p className="studio-hint">This is an illustrated front-facing concept designer, not a 3D renderer, lighting simulation, accessibility assessment, or construction tool. Facing direction narrows and mirrors illustrations rather than rotating a 3D model. Overlap is allowed for layered styling. Outdoor pieces can be arranged as a terrace concept.</p></div>
+        <p className="studio-hint">This is a stylized 3D concept designer, not a photorealistic lighting simulation, accessibility assessment, or construction tool. The ceiling and front/right walls are open for dollhouse access; wall height is fixed at 3.2 m. The brightest six visible fixtures emit local light. Overlap is allowed, and outdoor pieces can form a terrace concept. WebGL is required for 3D; Illustrated remains available on less capable devices.</p></div>
     </Dialog>}
     {confirmation && <Dialog title={confirmation.title} onClose={() => setConfirmation(null)}><p className="studio-intro">{confirmation.description}</p><div className="studio-object-actions"><button onClick={() => setConfirmation(null)}>Cancel</button><button className="studio-primary" onClick={() => { confirmation.run(); setConfirmation(null); }}>{confirmation.label}</button></div></Dialog>}
   </main>;
