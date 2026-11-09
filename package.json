@@ -7,16 +7,20 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "tsc --target ES2022 --module commonjs --moduleResolution node --strict --skipLibCheck --outDir node_modules/.cache/cafe-tests src/game.ts src/memoryOrders.ts && node --test tests/game.test.mjs",
+    "test:studio": "tsc --target ES2022 --module commonjs --moduleResolution node --jsx react-jsx --strict --skipLibCheck --outDir node_modules/.cache/studio-tests src/studioModel.ts src/StudioArtwork.tsx src/studio3dModel.ts && node --test tests/studio.test.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-three/fiber": "8.17.10",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "three": "0.170.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "4.3.4",
     "@types/react": "18.3.18",
     "@types/react-dom": "18.3.5",
+    "@types/three": "0.170.0",
     "typescript": "5.7.3",
     "vite": "6.4.5"
   }
