@@ -1,18 +1,139 @@
 import { useId } from 'react';
-import { furnishingRole } from './studioModel';
+import { catalog, furnishingRole } from './studioModel';
 import type { Design, Furnishing } from './studioModel';
 import { projectFloor, scenePlacement, SCENE_HEIGHT, SCENE_VIEWBOX, SCENE_WIDTH } from './studioView';
 import { MaterialDefs } from './MaterialFinish';
 
 export function FurnishingArt({ item }: { item: Furnishing }) {
   const id = useId().replace(/:/g, '');
-  const { kind, color, accent, shape, detail } = item;
+  const { color, accent, shape, detail } = item;
+  const kind = catalog.find((entry) => entry.kind === item.kind)?.style ?? item.kind;
   const radius = shape === 'Square' ? 1 : shape === 'Round' ? 22 : 10;
   const fill = `url(#surface-${id})`;
   const accentFill = `url(#accent-${id})`;
   const legs = <path d="m18 73-5 24m69-24 5 24" fill="none" strokeWidth="5" />;
+  const bulb = item.lightPower === 0 ? accent : item.lightWarmth > 50 ? '#ffe4a0' : '#d4eaff';
+  const lettering = <>{item.text.split('\n').slice(0, 7).map((line, i, lines) => <text key={i} x="50" y={50 - (lines.length - 1) * 7 + i * 14} fill={color} stroke="none" fontSize="10" textAnchor="middle" fontFamily={item.font}>{line}</text>)}</>;
   let artwork;
   switch (kind) {
+    case 'spindle':
+      artwork = <>{legs}<path d="M10 62V13q40-20 80 0v49" fill="none" strokeWidth="5" />{[25, 40, 60, 75].map((x) => <path key={x} d={`M${x} 12v47`} strokeWidth="3" />)}<path d="M7 62q43-14 86 0v15H7z" fill={fill} /></>;
+      break;
+    case 'wingback':
+      artwork = <>{legs}<path d="M15 65 4 12l18 8Q50-8 78 20l18-8-11 53v19H15z" fill={fill} /><path d="M22 24v39q28-12 56 0V24M17 73h66" fill="none" /><path d="M8 53h15v25H8zm69 0h15v25H77z" fill={accentFill} /></>;
+      break;
+    case 'booth':
+      artwork = <><rect x="4" y="3" width="92" height="90" rx={radius} fill={fill} />{[20, 35, 50, 65, 80].map((x) => <path key={x} d={`M${x} 8v55`} opacity=".55" />)}<path d="M5 68q45-10 90 0v14H5z" fill={fill} /><path d="M6 85h88v12H6z" fill={accentFill} /></>;
+      break;
+    case 'console':
+      artwork = <>{legs}<path d="M6 22h88v22H6z" fill={fill} /><path d="M3 16h94v9H3z" fill={fill} /><path d="M50 25v17M28 34h8m28 0h8M17 79h67" strokeWidth="2" /></>;
+      break;
+    case 'nesting':
+      artwork = <><path d="M9 29v66m57-66v66" strokeWidth="4" /><ellipse cx="38" cy="27" rx="36" ry="17" fill={fill} /><path d="M42 61v36m48-36v36" strokeWidth="4" /><ellipse cx="66" cy="59" rx="31" ry="15" fill={accentFill} /></>;
+      break;
+    case 'plinth':
+      artwork = <><path d="M11 18h78v78H11z" fill={fill} /><ellipse cx="50" cy="18" rx="39" ry="14" fill={fill} />{[22, 36, 50, 64, 78].map((x) => <path key={x} d={`M${x} 32v59`} opacity=".35" />)}</>;
+      break;
+    case 'blender':
+      artwork = <><path d="M25 13h50l-5 49H30z" fill={fill} /><path d="M75 21q30-3 15 30H72" fill="none" strokeWidth="5" /><path d="M20 6h60v9H20zm13 56h34l13 33H20z" fill={accentFill} /><path d="M30 43h40l-3 14H33z" fill={color} opacity=".7" /><circle cx="50" cy="80" r="7" fill={fill} /></>;
+      break;
+    case 'teapot':
+      artwork = <><path d="M29 36q-20 10-17 35 6 25 38 25t38-25q3-25-17-35z" fill={fill} /><path d="M17 60 2 28l26 17m55 2q34-4 9 30" fill="none" strokeWidth="7" /><ellipse cx="50" cy="36" rx="24" ry="6" fill={accentFill} /><circle cx="50" cy="27" r="5" fill={fill} /></>;
+      break;
+    case 'scale':
+      artwork = <><path d="M4 20h92v73H4z" fill={fill} /><path d="M11 26h78v38H11z" fill={accentFill} /><rect x="20" y="73" width="36" height="13" fill="#b9d1a8" /><text x="38" y="83" fontSize="10" textAnchor="middle" stroke="none" fill="#334732">0.00</text><circle cx="78" cy="79" r="6" fill={accent} /></>;
+      break;
+    case 'oven':
+      artwork = <><rect x="3" y="8" width="94" height="84" rx="5" fill={fill} /><rect x="10" y="19" width="62" height="58" rx="3" fill={accentFill} /><path d="M15 29h52m-52 34h52m-52-18h52" stroke={color} /><path d="m20 61 10-15 12 15zm22 0 10-15 12 15z" fill="#d9aa6b" />{[30, 55, 79].map((y) => <circle key={y} cx="84" cy={y} r="5" fill={accent} />)}</>;
+      break;
+    case 'dispenser':
+      artwork = <><path d="M24 13h52v65H24z" fill={fill} /><ellipse cx="50" cy="12" rx="26" ry="7" fill={accentFill} /><path d="M28 36h44v30H28z" fill="#aacdad" opacity=".6" /><circle cx="43" cy="47" r="8" fill="#e1ce72" /><circle cx="59" cy="56" r="7" fill="#c6d57e" /><path d="M50 68v12h17v8" fill="none" strokeWidth="5" /><path d="M20 95h60l-6-12H26z" fill={accentFill} /></>;
+      break;
+    case 'jar':
+      artwork = <><rect x="17" y="16" width="66" height="78" rx="9" fill={fill} /><rect x="14" y="6" width="72" height="15" rx="4" fill={accentFill} />{Array.from({ length: 12 }, (_, i) => <ellipse key={i} cx={29 + i % 3 * 20} cy={48 + Math.floor(i / 3) * 12} rx="7" ry="4" fill={accent} />)}<rect x="26" y="25" width="48" height="20" rx="3" fill="#eee2c9" /></>;
+      break;
+    case 'tins':
+      artwork = <>{[2, 35, 68].map((x, i) => <g key={x}><rect x={x} y={15 + i * 8} width="29" height={78 - i * 8} rx="4" fill={i % 2 ? accentFill : fill} /><ellipse cx={x + 14} cy={15 + i * 8} rx="14" ry="6" fill={accentFill} /><rect x={x + 5} y="50" width="19" height="21" fill="#efdfbc" /><path d={`M${x + 9} 57h11m-11 7h11`} strokeWidth="1" /></g>)}</>;
+      break;
+    case 'bakeryrack':
+      artwork = <><path d="M5 98V8h90v90" fill="none" strokeWidth="5" />{[30, 58, 86].map((y) => <g key={y}><path d={`M7 ${y}h86`} strokeWidth="4" />{[23, 50, 77].map((x) => <path key={x} d={`M${x - 10} ${y - 4}q10-28 20 0z`} fill={fill} />)}</g>)}</>;
+      break;
+    case 'archway':
+      artwork = <><path d="M4 98V35Q4 2 50 2t46 33v63H77V36q0-20-27-20T23 36v62z" fill={fill} /><path d="M23 98V36q0-20 27-20t27 20v62" fill="#6b705c" fillOpacity=".2" /></>;
+      break;
+    case 'frenchdoor':
+      artwork = <><rect x="3" y="3" width="94" height="95" rx={radius / 2} fill={fill} />{[12, 55].map((x) => <g key={x}><rect x={x} y="12" width="33" height="69" fill="#c3d9d0" /><path d={`M${x} 35h33m-33 23h33m-17-46v69`} /><rect x={x} y="86" width="33" height="6" fill="none" /></g>)}<path d="M47 54v10m6-10v10" strokeWidth="3" /></>;
+      break;
+    case 'archedwindow':
+      artwork = <><path d="M5 96V38Q5 3 50 3t45 35v58z" fill={accentFill} /><path d="M13 88V39q0-28 37-28t37 28v49z" fill={fill} /><path d="M50 12v77M13 46h74M13 69h74M24 23l26 23 25-23" fill="none" /></>;
+      break;
+    case 'curtains':
+      artwork = <><path d="M2 5h96" strokeWidth="5" /><path d="M4 8h40L32 91l-30 6zm52 0h40l2 89-30-6z" fill={fill} />{[10, 21, 33, 65, 77, 89].map((x) => <path key={x} d={`M${x} 12q-5 42 0 79`} fill="none" opacity=".45" />)}</>;
+      break;
+    case 'column':
+      artwork = <><path d="M20 13h60v74H20z" fill={fill} /><path d="M8 3h84v12H8zm0 83h84v12H8z" fill={accentFill} />{[30, 43, 57, 70].map((x) => <path key={x} d={`M${x} 19v62`} strokeWidth="3" opacity=".4" />)}</>;
+      break;
+    case 'wallpanel': case 'glassdivider':
+      artwork = <><rect x="4" y="2" width="92" height="96" rx="3" fill={fill} />{kind === 'wallpanel' ? <><rect x="12" y="10" width="76" height="78" rx={radius / 2} fill="none" strokeWidth="3" /><rect x="20" y="19" width="60" height="60" fill="none" /></> : <>{Array.from({ length: 11 }, (_, i) => <path key={i} d={`M${10 + i * 8} 5v90`} strokeWidth="2" opacity=".6" />)}<path d="M4 3h92v94H4z" fill="none" strokeWidth="4" /></>}</>;
+      break;
+    case 'globe': case 'lantern':
+      artwork = <><path d="M50 0v25" strokeWidth="3" /><ellipse cx="50" cy="58" rx="43" ry="33" fill={fill} /><ellipse cx="50" cy="65" rx="30" ry="22" fill={bulb} opacity={item.lightPower / 220} stroke="none" />
+        {kind === 'lantern' && [35, 45, 55, 65, 75, 85].map((y) => <path key={y} d={`M13 ${y}h74`} opacity=".45" />)}<path d="M39 25h22M39 91h22" strokeWidth="3" /></>;
+      break;
+    case 'chandelier':
+      artwork = <><path d="M50 0v48M9 48h82M14 48v15m36-15v25m36-25v15" fill="none" strokeWidth="4" />{[16, 50, 84].map((x) => <g key={x}><circle cx={x} cy={x === 50 ? 82 : 72} r="14" fill={fill} /><circle cx={x} cy={x === 50 ? 82 : 72} r="10" fill={bulb} opacity={item.lightPower / 170} stroke="none" /></g>)}</>;
+      break;
+    case 'tracklight':
+      artwork = <><path d="M2 19h96" strokeWidth="6" />{[18, 50, 82].map((x) => <g key={x}><path d={`M${x} 19v21`} strokeWidth="3" /><path d={`m${x - 12} 40 20-8 8 35-20 7z`} fill={fill} /><ellipse cx={x + 5} cy="70" rx="11" ry="5" fill={bulb} /></g>)}</>;
+      break;
+    case 'arclamp':
+      artwork = <><path d="M10 97h32M22 94V36Q22 1 77 17v18" fill="none" strokeWidth="4" /><path d="M55 46q0-19 22-19t22 19z" fill={fill} /><ellipse cx="77" cy="46" rx="21" ry="4" fill={bulb} /></>;
+      break;
+    case 'doublesconce':
+      artwork = <><path d="M42 35h16v33H42z" fill={accentFill} /><path d="M50 47H17V25m33 22h33v25" fill="none" strokeWidth="5" /><circle cx="17" cy="22" r="17" fill={fill} /><circle cx="83" cy="76" r="17" fill={fill} /><circle cx="17" cy="22" r="12" fill={bulb} opacity={item.lightPower / 180} /><circle cx="83" cy="76" r="12" fill={bulb} opacity={item.lightPower / 180} /></>;
+      break;
+    case 'desklamp':
+      artwork = <><ellipse cx="42" cy="94" rx="31" ry="5" fill={fill} /><path d="M42 91 19 54l35-33" fill="none" strokeWidth="5" /><circle cx="19" cy="54" r="5" fill={accent} /><path d="M48 20q10-18 25-6l20 19-28 20z" fill={fill} /><path d="m65 53 28-20" stroke={bulb} strokeWidth="5" /></>;
+      break;
+    case 'cactus':
+      artwork = <><path d="M44 76V14q0-12 12 0v62M44 48H23V28q0-11 10 0v11h11m12 18h19V34q0-12-10 0v13h-9" fill={color} stroke={color} strokeWidth="6" /><path d="M30 74h42l-7 23H37z" fill={accentFill} /><path d="M49 15v55" stroke="#d6e0b0" strokeWidth="2" /></>;
+      break;
+    case 'fern':
+      artwork = <><path d="M30 72h40l-7 25H37z" fill={accentFill} />{[-40, -20, 0, 20, 40].map((angle) => <g key={angle} transform={`rotate(${angle} 50 70)`}><path d="M50 71V10" stroke={color} strokeWidth="2" />{[23, 36, 49, 62].map((y) => <path key={y} d={`M50 ${y}q-25-18-18-23 13 0 18 23 5-23 18-23 7 5-18 23`} fill={color} stroke="none" />)}</g>)}</>;
+      break;
+    case 'wallplates':
+      artwork = <>{[[22, 32, 20], [73, 28, 22], [51, 74, 22]].map(([x, y, r]) => <g key={x}><circle cx={x} cy={y} r={r} fill={fill} /><circle cx={x} cy={y} r={r - 5} fill="none" /><path d={`M${x - 10} ${y}q10-15 20 0-10 15-20 0`} fill={accent} /></g>)}</>;
+      break;
+    case 'roundmirror':
+      artwork = <><circle cx="50" cy="50" r="47" fill={accentFill} /><circle cx="50" cy="50" r="40" fill={fill} /><path d="m26 63 36-36m-21 49 34-34" stroke="#fff" strokeWidth="5" strokeOpacity=".6" /></>;
+      break;
+    case 'gallery':
+      artwork = <>{[2, 36, 70].map((x, i) => <g key={x}><rect x={x} y={i === 1 ? 6 : 20} width="28" height="73" fill={accentFill} /><rect x={x + 4} y={i === 1 ? 10 : 24} width="20" height="65" fill="#f1dfbf" /><circle cx={x + 14} cy={35 + i * 8} r="7" fill={color} /><path d={`m${x + 5} 76 8-22 11 22z`} fill={color} /></g>)}</>;
+      break;
+    case 'vasepair':
+      artwork = <><path d="M13 14h22v24q20 25 10 55H4q-9-30 9-55z" fill={fill} /><path d="M64 40h20v12q17 11 11 41H54q-6-30 10-41z" fill={accentFill} /><path d="M19 48v33m51-23v24" stroke="#fff4dd" strokeOpacity=".5" strokeWidth="3" /></>;
+      break;
+    case 'menustand': case 'chalkboard':
+      artwork = <><path d="M8 98 21 3h58l13 95M15 76h70" fill="none" strokeWidth="4" /><path d="M20 9h60v73H20z" fill={accentFill} /><g transform="translate(15 8) scale(.7)">{lettering}</g></>;
+      break;
+    case 'gardenbench':
+      artwork = <>{legs}{[10, 25, 40, 65, 78].map((y) => <rect key={y} x="4" y={y} width="92" height="9" rx="2" fill={fill} />)}<path d="M15 11v72m70-72v72" strokeWidth="3" /></>;
+      break;
+    case 'picnictable':
+      artwork = <><path d="m25 28-16 69m66-69 16 69M22 56h56" strokeWidth="5" fill="none" /><path d="M4 14h92v14H4zm-3 48h30v10H1zm68 0h30v10H69z" fill={fill} /><path d="M13 18h74" opacity=".5" /></>;
+      break;
+    case 'patioheater':
+      artwork = <><path d="M44 27h12v55H44z" fill={fill} /><path d="M32 79h36l7 18H25z" fill={fill} /><path d="M6 12 50 3l44 9v8H6z" fill={fill} /><rect x="31" y="22" width="38" height="16" fill="#d6af6b" /><path d="M37 23v14m9-14v14m9-14v14m9-14v14" /></>;
+      break;
+    case 'fence':
+      artwork = <><path d="M0 39h100v8H0zm0 35h100v8H0z" fill={accentFill} />{[6, 26, 46, 66, 86].map((x) => <path key={x} d={`m${x} 98V16l6-12 6 12v82z`} fill={fill} />)}</>;
+      break;
+    case 'olivetree':
+      artwork = <><path d="M45 79V26m5 28L27 29m23 17 20-21" fill="none" stroke="#927252" strokeWidth="5" />{[[25, 25], [48, 14], [72, 26], [22, 45], [72, 44]].map(([x, y]) => <g key={`${x}-${y}`}><ellipse cx={x} cy={y} rx="20" ry="16" fill={color} stroke="#6b805c" /><path d={`m${x - 8} ${y + 3} 14-9`} stroke="#b5c29d" /></g>)}<path d="M28 76h44l-9 22H37z" fill={accentFill} /></>;
+      break;
+    case 'outdoorlantern':
+      artwork = <><path d="M35 14q0-25 30 0" fill="none" strokeWidth="4" /><path d="M15 27 50 10l35 17v67H15z" fill={fill} /><path d="M15 30h70m-70 60h70M28 31v58m44-58v58" strokeWidth="3" /><rect x="38" y="57" width="24" height="29" fill={accentFill} /><path d="M50 38q-13 16 0 19 13-7 0-19" fill={bulb} /></>;
+      break;
     case 'bentwood': case 'canechair':
       artwork = <>{legs}<path d="M12 63V28Q12 4 50 4t38 24v35" fill="none" strokeWidth="6" />
         <path d="M24 55V29q0-15 26-15t26 15v26z" fill={fill} />
@@ -132,7 +253,7 @@ export function FurnishingArt({ item }: { item: Furnishing }) {
         <path d={kind === 'planter' ? 'M2 67h96l-5 29H7z' : 'M28 66h44l-7 31H35z'} fill={accentFill} /><path d={kind === 'planter' ? 'M0 66h100v7H0z' : 'M25 65h50v8H25z'} fill={accentFill} /><path d="M35 78h29" stroke="#fff2d6" strokeOpacity=".4" /></>;
       break;
     case 'rug':
-      artwork = <><rect x="2" y="8" width="96" height="84" rx={radius} fill={fill} /><rect x="10" y="16" width="80" height="68" rx={radius / 2} fill="none" strokeWidth="3" />
+      artwork = <>{shape === 'Round' ? <><ellipse cx="50" cy="50" rx="48" ry="42" fill={fill} /><ellipse cx="50" cy="50" rx="40" ry="34" fill="none" strokeWidth="3" /></> : <><rect x="2" y="8" width="96" height="84" rx={radius} fill={fill} /><rect x="10" y="16" width="80" height="68" rx={radius / 2} fill="none" strokeWidth="3" /></>}
         {detail > 30 && <><path d="m50 22 25 28-25 28-25-28z" fill={accent} fillOpacity=".45" />{Array.from({ length: 12 }, (_, i) => <path key={i} d={`M${6 + i * 8} 2v7m0 82v7`} />)}</>}</>;
       break;
     case 'vase':
@@ -168,7 +289,7 @@ export function FurnishingArt({ item }: { item: Furnishing }) {
   }
   return <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="none" overflow="visible" aria-hidden="true">
     <MaterialDefs id={id} material={item.material} color={color} accent={accent} pattern={item.pattern} />
-    <g stroke={accent} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" data-material={item.material} data-role={furnishingRole(kind)}>{artwork}</g>
+    <g stroke={accent} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" data-material={item.material} data-role={furnishingRole(item.kind)} data-style={kind}>{artwork}</g>
   </svg>;
 }
 
@@ -224,14 +345,14 @@ export function RoomArtwork({ design, grid }: { design: Design; grid: boolean })
 
 export function PlacedFurnishing({ item, design }: { item: Furnishing; design: Design }) {
   const p = scenePlacement(item, design);
-  if (item.kind === 'rug') {
+  if (furnishingRole(item.kind) === 'rug') {
     const floor = projectFloor(item.x, item.y, design.room);
     return <g transform={`translate(${floor.x} ${floor.y}) scale(1 .36) rotate(${item.rotation})`} opacity={item.opacity / 100}>
       <svg x={-p.width / 2} y={-item.depth * p.scale / 2} width={p.width} height={item.depth * p.scale} overflow="visible"><FurnishingArt item={item} /></svg>
     </g>;
   }
   return <g transform={`translate(${p.x} ${p.y})`} opacity={item.opacity / 100} data-kind={item.kind}>
-    {!['window', 'art', 'mirror', 'menu', 'sign', 'clock', 'sconce', 'shelf', 'pendant'].includes(item.kind) && <ellipse cy="1" rx={p.width * .48} ry={Math.min(12, item.depth * p.scale * .12)} fill="#725741" opacity=".12" stroke="none" />}
+    {!['window', 'art', 'mirror', 'menu', 'sign', 'clock', 'sconce', 'shelf', 'pendant'].includes(furnishingRole(item.kind)) && <ellipse cy="1" rx={p.width * .48} ry={Math.min(12, item.depth * p.scale * .12)} fill="#725741" opacity=".12" stroke="none" />}
     <g transform={`scale(${p.mirror} 1)`}>
       <svg x={-p.width / 2} y={-p.height} width={p.width} height={p.height} overflow="visible"><FurnishingArt item={item} /></svg>
     </g>
