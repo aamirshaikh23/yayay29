@@ -22,6 +22,10 @@ export interface CatalogItem {
   color: string;
   accent: string;
   material: Material;
+  style?: string;
+  role?: string;
+  height?: number;
+  shape?: Furnishing['shape'];
 }
 
 export const catalog: CatalogItem[] = [
@@ -75,6 +79,62 @@ export const catalog: CatalogItem[] = [
   { kind: 'basket', name: 'Woven storage basket', category: 'Decor', width: 45, depth: 40, price: 45, color: '#c6a16c', accent: '#947044', material: 'Rattan' },
   { kind: 'recordplayer', name: 'Record player', category: 'Decor', width: 48, depth: 35, price: 220, color: '#b48766', accent: '#59483c', material: 'Walnut' },
   { kind: 'tablelamp', name: 'Mushroom table lamp', category: 'Lighting', width: 32, depth: 32, price: 110, color: '#cc9a7e', accent: '#a17658', material: 'Ceramic' },
+  { kind: 'wishbone', name: 'Wishbone dining chair', category: 'Seating', style: 'bentwood', role: 'chair', width: 55, depth: 51, height: 82, price: 240, color: '#c5a67a', accent: '#8a6945', material: 'Oak' },
+  { kind: 'spindle', name: 'Spindle-back chair', category: 'Seating', style: 'spindle', role: 'chair', width: 49, depth: 48, height: 95, price: 180, color: '#879b84', accent: '#5e705b', material: 'Oak' },
+  { kind: 'shellchair', name: 'Sculpted shell chair', category: 'Seating', style: 'tubchair', role: 'armchair', width: 63, depth: 62, height: 80, price: 275, color: '#cb9e89', accent: '#82684f', material: 'Velvet' },
+  { kind: 'wingback', name: 'Wingback reading chair', category: 'Seating', style: 'wingback', role: 'armchair', width: 85, depth: 90, height: 118, price: 620, color: '#a2ad8d', accent: '#69543e', material: 'Linen' },
+  { kind: 'loveseat', name: 'Curved velvet loveseat', category: 'Seating', style: 'sofa', role: 'sofa', width: 170, depth: 82, height: 88, shape: 'Round', price: 920, color: '#b67e75', accent: '#775044', material: 'Velvet' },
+  { kind: 'booth', name: 'High-back dining booth', category: 'Seating', style: 'booth', role: 'bench', width: 190, depth: 70, height: 135, price: 1100, color: '#849a85', accent: '#596d56', material: 'Leather' },
+  { kind: 'saddlestool', name: 'Saddle counter stool', category: 'Seating', style: 'stool', role: 'stool', width: 48, depth: 35, height: 72, price: 145, color: '#bb8d58', accent: '#70503d', material: 'Walnut' },
+  { kind: 'footstool', name: 'Upholstered footstool', category: 'Seating', style: 'ottoman', role: 'stool', width: 72, depth: 48, height: 42, shape: 'Square', price: 190, color: '#d8cbb1', accent: '#9e9276', material: 'Boucle' },
+  { kind: 'squarebistro', name: 'Square marble bistro table', category: 'Tables', style: 'table', role: 'table', width: 75, depth: 75, height: 74, shape: 'Square', price: 290, color: '#e6e2d6', accent: '#777a70', material: 'Marble' },
+  { kind: 'ovaldining', name: 'Oval communal table', category: 'Tables', style: 'table', role: 'dining', width: 220, depth: 95, height: 75, shape: 'Round', price: 790, color: '#b18967', accent: '#71513a', material: 'Walnut' },
+  { kind: 'hightop', name: 'High-top gathering table', category: 'Tables', style: 'dining', role: 'dining', width: 150, depth: 65, height: 105, shape: 'Square', price: 480, color: '#ac8c68', accent: '#54605a', material: 'Oak' },
+  { kind: 'consoletable', name: 'Entry console table', category: 'Tables', style: 'console', role: 'side', width: 140, depth: 35, height: 85, price: 360, color: '#c2a181', accent: '#8a694b', material: 'Oak' },
+  { kind: 'nestingtables', name: 'Nesting side-table pair', category: 'Tables', style: 'nesting', role: 'side', width: 80, depth: 60, height: 55, price: 250, color: '#d4c8b3', accent: '#a08553', material: 'Brass' },
+  { kind: 'glasstable', name: 'Glass pedestal table', category: 'Tables', style: 'table', role: 'table', width: 90, depth: 90, height: 74, shape: 'Round', price: 420, color: '#bcd4d2', accent: '#829e9d', material: 'Glass' },
+  { kind: 'terrazzoisland', name: 'Terrazzo service island', category: 'Tables', style: 'counter', role: 'counter', width: 180, depth: 85, height: 98, price: 980, color: '#e0cfb9', accent: '#8a9b88', material: 'Terrazzo' },
+  { kind: 'pedestalside', name: 'Sculptural plinth table', category: 'Tables', style: 'plinth', role: 'side', width: 50, depth: 50, height: 52, price: 210, color: '#c4bcb0', accent: '#89867c', material: 'Concrete' },
+  { kind: 'blender', name: 'Smoothie blender', category: 'Coffee bar', style: 'blender', role: 'grinder', width: 25, depth: 25, height: 48, price: 240, color: '#9baea2', accent: '#55695e', material: 'Glass' },
+  { kind: 'teapot', name: 'Tea service pot', category: 'Coffee bar', style: 'teapot', role: 'kettle', width: 30, depth: 24, height: 26, price: 65, color: '#d2bc9e', accent: '#91765d', material: 'Ceramic' },
+  { kind: 'scale', name: 'Digital brew scale', category: 'Coffee bar', style: 'scale', role: 'tray', width: 24, depth: 22, height: 8, price: 70, color: '#68756d', accent: '#314b3c', material: 'Metal' },
+  { kind: 'oven', name: 'Countertop pastry oven', category: 'Coffee bar', style: 'oven', role: 'toaster', width: 65, depth: 50, height: 45, price: 650, color: '#b6beba', accent: '#58665f', material: 'Chrome' },
+  { kind: 'dispenser', name: 'Infused-water dispenser', category: 'Coffee bar', style: 'dispenser', role: 'kettle', width: 30, depth: 30, height: 55, price: 95, color: '#c4ddd3', accent: '#9a7c52', material: 'Glass' },
+  { kind: 'beanjar', name: 'Coffee-bean storage jar', category: 'Coffee bar', style: 'jar', role: 'vase', width: 22, depth: 22, height: 35, price: 30, color: '#bca585', accent: '#6e4a32', material: 'Glass' },
+  { kind: 'teatins', name: 'Tea-tin collection', category: 'Coffee bar', style: 'tins', role: 'books', width: 55, depth: 20, height: 25, price: 55, color: '#879f87', accent: '#c7ae7b', material: 'Metal' },
+  { kind: 'bakeryrack', name: 'Bakery display rack', category: 'Coffee bar', style: 'bakeryrack', role: 'cabinet', width: 85, depth: 40, height: 160, price: 420, color: '#ba956f', accent: '#80634b', material: 'Oak' },
+  { kind: 'archway', name: 'Open arched doorway', category: 'Architecture', style: 'archway', role: 'door', width: 130, depth: 25, height: 250, price: 850, color: '#c9b698', accent: '#957c61', material: 'Concrete' },
+  { kind: 'frenchdoor', name: 'Double French doors', category: 'Architecture', style: 'frenchdoor', role: 'door', width: 160, depth: 20, height: 235, price: 1250, color: '#a9baa8', accent: '#6e856d', material: 'Oak' },
+  { kind: 'archedwindow', name: 'Arched picture window', category: 'Architecture', style: 'archedwindow', role: 'window', width: 155, depth: 20, height: 190, price: 820, color: '#b9d5cf', accent: '#ae8d65', material: 'Glass' },
+  { kind: 'curtains', name: 'Full-height drapery', category: 'Architecture', style: 'curtains', role: 'window', width: 180, depth: 25, height: 230, price: 350, color: '#d8ccb4', accent: '#a49073', material: 'Linen' },
+  { kind: 'column', name: 'Fluted interior column', category: 'Architecture', style: 'column', role: 'partition', width: 45, depth: 45, height: 260, price: 480, color: '#d9d3c2', accent: '#a79c87', material: 'Marble' },
+  { kind: 'wallpanel', name: 'Decorative wall panel', category: 'Architecture', style: 'wallpanel', role: 'art', width: 120, depth: 15, height: 170, price: 230, color: '#c4b99e', accent: '#8d846f', material: 'Oak' },
+  { kind: 'glassdivider', name: 'Reeded-glass divider', category: 'Architecture', style: 'glassdivider', role: 'partition', width: 140, depth: 20, height: 185, price: 680, color: '#c0d7ca', accent: '#99835b', material: 'Glass' },
+  { kind: 'halfwall', name: 'Half-height partition', category: 'Architecture', style: 'wallpanel', role: 'partition', width: 180, depth: 25, height: 110, price: 390, color: '#a7b49c', accent: '#72826b', material: 'Concrete' },
+  { kind: 'globependant', name: 'Opal globe pendant', category: 'Lighting', style: 'globe', role: 'pendant', width: 38, depth: 38, height: 80, price: 160, color: '#f1e7ce', accent: '#a58a56', material: 'Glass' },
+  { kind: 'domependant', name: 'Wide brass dome pendant', category: 'Lighting', style: 'pendant', role: 'pendant', width: 75, depth: 75, height: 60, price: 280, color: '#c69b50', accent: '#8a6633', material: 'Brass' },
+  { kind: 'chandelier', name: 'Three-globe chandelier', category: 'Lighting', style: 'chandelier', role: 'pendant', width: 130, depth: 45, height: 85, price: 580, color: '#ece0c5', accent: '#b28a46', material: 'Brass' },
+  { kind: 'tracklight', name: 'Three-spot track light', category: 'Lighting', style: 'tracklight', role: 'pendant', width: 150, depth: 30, height: 40, price: 310, color: '#77857a', accent: '#495a4e', material: 'Metal' },
+  { kind: 'lantern', name: 'Hanging paper lantern', category: 'Lighting', style: 'lantern', role: 'pendant', width: 55, depth: 55, height: 90, price: 95, color: '#f2e6cb', accent: '#b2a183', material: 'Linen' },
+  { kind: 'arclamp', name: 'Arc reading lamp', category: 'Lighting', style: 'arclamp', role: 'lamp', width: 100, depth: 45, height: 185, price: 340, color: '#dbccb0', accent: '#a08a5b', material: 'Brass' },
+  { kind: 'doublesconce', name: 'Double globe wall light', category: 'Lighting', style: 'doublesconce', role: 'sconce', width: 50, depth: 25, height: 65, price: 185, color: '#f2e6ca', accent: '#a58b59', material: 'Brass' },
+  { kind: 'desklamp', name: 'Task desk lamp', category: 'Lighting', style: 'desklamp', role: 'tablelamp', width: 40, depth: 30, height: 55, price: 125, color: '#8da38f', accent: '#556e57', material: 'Metal' },
+  { kind: 'cactus', name: 'Tall sculptural cactus', category: 'Decor', style: 'cactus', role: 'plant', width: 55, depth: 55, height: 130, price: 85, color: '#7d9d73', accent: '#c08e71', material: 'Ceramic' },
+  { kind: 'fern', name: 'Cascading fern', category: 'Decor', style: 'fern', role: 'plant', width: 75, depth: 65, height: 80, price: 65, color: '#79975b', accent: '#b99567', material: 'Rattan' },
+  { kind: 'wallplates', name: 'Decorative plate trio', category: 'Decor', style: 'wallplates', role: 'art', width: 115, depth: 15, height: 65, price: 95, color: '#d5ba95', accent: '#779487', material: 'Ceramic' },
+  { kind: 'roundmirror', name: 'Round brass wall mirror', category: 'Decor', style: 'roundmirror', role: 'mirror', width: 85, depth: 15, height: 85, price: 250, color: '#bdd3d2', accent: '#b69754', material: 'Brass' },
+  { kind: 'juterug', name: 'Round woven jute rug', category: 'Decor', style: 'rug', role: 'rug', width: 200, depth: 200, height: 5, shape: 'Round', price: 180, color: '#c1a477', accent: '#947c50', material: 'Rattan' },
+  { kind: 'gallery', name: 'Gallery-wall triptych', category: 'Decor', style: 'gallery', role: 'art', width: 160, depth: 15, height: 85, price: 290, color: '#b59f7e', accent: '#7f6750', material: 'Walnut' },
+  { kind: 'vasepair', name: 'Sculptural vase pair', category: 'Decor', style: 'vasepair', role: 'vase', width: 45, depth: 25, height: 48, price: 85, color: '#c8aa8a', accent: '#8d9277', material: 'Ceramic' },
+  { kind: 'menustand', name: 'Tabletop menu holder', category: 'Decor', style: 'menustand', role: 'sign', width: 25, depth: 18, height: 35, price: 35, color: '#eee1c5', accent: '#876a4a', material: 'Oak' },
+  { kind: 'gardenbench', name: 'Slatted garden bench', category: 'Outdoor', style: 'gardenbench', role: 'bench', width: 180, depth: 55, height: 90, price: 390, color: '#a4b29a', accent: '#687d5f', material: 'Oak' },
+  { kind: 'patiochair', name: 'Woven patio armchair', category: 'Outdoor', style: 'canechair', role: 'armchair', width: 62, depth: 65, height: 88, price: 230, color: '#cfb183', accent: '#8d7653', material: 'Rattan' },
+  { kind: 'picnictable', name: 'Terrace picnic table', category: 'Outdoor', style: 'picnictable', role: 'dining', width: 210, depth: 120, height: 75, price: 590, color: '#ba946e', accent: '#846344', material: 'Oak' },
+  { kind: 'patioheater', name: 'Freestanding patio heater', category: 'Outdoor', style: 'patioheater', role: 'partition', width: 65, depth: 65, height: 220, price: 450, color: '#aeb8af', accent: '#65736a', material: 'Metal' },
+  { kind: 'fence', name: 'Terrace picket fence', category: 'Outdoor', style: 'fence', role: 'partition', width: 200, depth: 20, height: 100, price: 210, color: '#d9d7c6', accent: '#a29f88', material: 'Oak' },
+  { kind: 'chalkboard', name: 'Pavement chalkboard', category: 'Outdoor', style: 'chalkboard', role: 'menu', width: 65, depth: 45, height: 110, price: 120, color: '#415b4d', accent: '#b49369', material: 'Oak' },
+  { kind: 'olivetree', name: 'Terracotta olive tree', category: 'Outdoor', style: 'olivetree', role: 'plant', width: 95, depth: 95, height: 190, price: 230, color: '#85987a', accent: '#b78263', material: 'Ceramic' },
+  { kind: 'outdoorlantern', name: 'Floor hurricane lantern', category: 'Outdoor', style: 'outdoorlantern', role: 'tablelamp', width: 35, depth: 35, height: 65, price: 80, color: '#c1d5ca', accent: '#8d7854', material: 'Glass' },
 ];
 
 export interface Furnishing {
@@ -86,6 +146,8 @@ export interface Furnishing {
   width: number;
   depth: number;
   rotation: number;
+  height?: number;
+  elevation?: number;
   color: string;
   accent: string;
   material: Material;
@@ -102,6 +164,8 @@ export interface Furnishing {
 }
 
 export function furnishingRole(kind: string): string {
+  const entry = catalog.find((entry) => entry.kind === kind);
+  if (entry?.role) return furnishingRole(entry.role);
   const roles: Record<string, string> = {
     bentwood: 'chair', canechair: 'chair', tubchair: 'armchair', ottoman: 'stool',
     coffeetable: 'side', tablelamp: 'lamp',
@@ -146,11 +210,12 @@ export const themes: Theme[] = [
 export function newItem(kind: string, id: string, x: number, y: number): Furnishing {
   const entry = catalog.find((item) => item.kind === kind);
   if (!entry) throw new Error(`Unknown furnishing: ${kind}`);
+  const role = furnishingRole(kind);
   return {
     id, kind, name: entry.name, x, y, width: entry.width, depth: entry.depth, rotation: 0,
     color: entry.color, accent: entry.accent, material: entry.material, pattern: 'Plain',
-    shape: ['table', 'side', 'stool', 'outdoor', 'plant', 'pendant', 'clock', 'umbrella', 'cups', 'vase'].includes(kind) ? 'Round' : 'Rounded',
-    text: kind === 'menu' ? 'COFFEE\nEspresso  3\nLatte  4\nMatcha  4\nMade with love' : kind === 'sign' ? 'stay a little' : '',
+    shape: entry.shape ?? (['table', 'side', 'stool', 'outdoor', 'plant', 'pendant', 'clock', 'umbrella', 'cups', 'vase'].includes(role) ? 'Round' : 'Rounded'),
+    text: role === 'menu' ? 'COFFEE\nEspresso  3\nLatte  4\nMatcha  4\nMade with love' : role === 'sign' ? 'stay a little' : '',
     font: 'serif', detail: 55, lightPower: 70, lightWarmth: 65, opacity: 100, locked: false, hidden: false,
   };
 }
@@ -265,6 +330,8 @@ export function decodeDesign(value: unknown): Design {
       id, kind: option(item.kind, catalog.map((entry) => entry.kind)), name: string(item.name, 60),
       x: number(item.x, 0, room.width), y: number(item.y, 0, room.depth),
       width: number(item.width, 10, 350), depth: number(item.depth, 10, 300), rotation: number(item.rotation, 0, 360),
+      ...(item.height === undefined ? {} : { height: number(item.height, 5, 350) }),
+      ...(item.elevation === undefined ? {} : { elevation: number(item.elevation, 0, 300) }),
       color: color(item.color), accent: color(item.accent), material: option(item.material, materials),
       pattern: option(item.pattern, patterns), shape: option(item.shape, ['Rounded', 'Square', 'Round']),
       text: string(item.text, 200), font: option(item.font, fonts), detail: number(item.detail, 0, 100),
@@ -301,13 +368,13 @@ export function designStats(design: Design) {
   const visible = design.items.filter((item) => !item.hidden);
   return {
     area: Math.round(design.room.width * design.room.depth / 10000 * 10) / 10,
-    seats: visible.reduce((count, item) => count + (['chair', 'armchair', 'stool'].includes(furnishingRole(item.kind)) ? 1 : ['sofa', 'bench'].includes(item.kind) ? Math.max(1, Math.floor(item.width / 55)) : 0), 0),
+    seats: visible.reduce((count, item) => count + (['chair', 'armchair', 'stool'].includes(furnishingRole(item.kind)) ? 1 : ['sofa', 'bench'].includes(furnishingRole(item.kind)) ? Math.max(1, Math.floor(item.width / 55)) : 0), 0),
     cost: design.items.reduce((cost, item) => cost + (catalog.find((entry) => entry.kind === item.kind)?.price ?? 0), 0),
-    plants: visible.filter((item) => ['plant', 'planter'].includes(item.kind)).length,
+    plants: visible.filter((item) => ['plant', 'planter'].includes(furnishingRole(item.kind))).length,
     lights: visible.filter((item) => ['pendant', 'sconce', 'lamp'].includes(furnishingRole(item.kind))).length,
-    tables: visible.filter((item) => ['table', 'dining', 'outdoor'].includes(item.kind)).length,
-    coffeeBar: visible.some((item) => item.kind === 'counter') && visible.some((item) => item.kind === 'machine'),
-    entrance: visible.some((item) => item.kind === 'door'),
+    tables: visible.filter((item) => ['table', 'dining', 'outdoor'].includes(furnishingRole(item.kind))).length,
+    coffeeBar: visible.some((item) => furnishingRole(item.kind) === 'counter') && visible.some((item) => item.kind === 'machine'),
+    entrance: visible.some((item) => furnishingRole(item.kind) === 'door'),
   };
 }
 export const briefs = [
