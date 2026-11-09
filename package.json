@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "test": "tsc --target ES2022 --module commonjs --moduleResolution node --strict --skipLibCheck --outDir node_modules/.cache/cafe-tests src/game.ts src/memoryOrders.ts && node --test tests/game.test.mjs",
-    "test:studio": "tsc --target ES2022 --module commonjs --moduleResolution node --jsx react-jsx --strict --skipLibCheck --outDir node_modules/.cache/studio-tests src/studioModel.ts src/StudioArtwork.tsx src/studio3dModel.ts && node --test tests/studio.test.cjs",
+    "test:studio": "tsc --target ES2022 --module commonjs --moduleResolution node --jsx react-jsx --strict --skipLibCheck --outDir node_modules/.cache/studio-tests src/studioModel.ts src/StudioArtwork.tsx src/studio3dModel.ts src/studio3dResources.ts && node --test tests/studio.test.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
