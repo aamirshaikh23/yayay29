@@ -2,6 +2,7 @@ import { useId } from 'react';
 import { furnishingRole } from './studioModel';
 import type { Design, Furnishing } from './studioModel';
 import { projectFloor, scenePlacement, SCENE_HEIGHT, SCENE_VIEWBOX, SCENE_WIDTH } from './studioView';
+import { MaterialDefs } from './MaterialFinish';
 
 export function FurnishingArt({ item }: { item: Furnishing }) {
   const id = useId().replace(/:/g, '');
@@ -166,29 +167,7 @@ export function FurnishingArt({ item }: { item: Furnishing }) {
     default: artwork = <rect x="5" y="5" width="90" height="90" rx={radius} fill={fill} />;
   }
   return <svg viewBox="0 0 100 100" width="100%" height="100%" preserveAspectRatio="none" overflow="visible" aria-hidden="true">
-    <defs>
-      <g id={`texture-${id}`}>
-        {['Oak', 'Walnut', 'Rattan'].includes(item.material) && <path d="M0 5q10-5 20 0M0 15q10-5 20 0" fill="none" stroke={accent} strokeOpacity=".22" />}
-        {item.material === 'Marble' && <path d="m0 0 9 8-2 7 13 5M9 8l11-3" fill="none" stroke={accent} strokeOpacity=".2" />}
-        {item.material === 'Terrazzo' && <g fill={accent} opacity=".4"><path d="m4 3 5 1-3 5zM13 11l5 4-6 2z" /><circle cx="3" cy="16" r="2" /></g>}
-        {item.material === 'Metal' && <path d="M0 4h20m-20 2h20m-20 2h20" stroke="#fff" strokeOpacity=".18" />}
-        {['Velvet', 'Linen'].includes(item.material) && <path d="M0 4h20M4 0v20M0 14h20M14 0v20" stroke={accent} strokeOpacity=".12" strokeWidth=".7" />}
-        {item.material === 'Leather' && <path d="m0 4 7 3 8-5 5 7m-20 7 8-3 6 6 6-4" fill="none" stroke={accent} strokeOpacity=".3" strokeWidth=".8" />}
-        {item.material === 'Boucle' && <g fill="none" stroke={accent} strokeOpacity=".35">{[3, 10, 17].map((x) => <g key={x}><circle cx={x} cy="5" r="2" /><circle cx={x} cy="14" r="2.5" /></g>)}</g>}
-        {['Brass', 'Chrome', 'Glass'].includes(item.material) && <><path d="M1 0h6v20H1z" fill={item.material === 'Brass' ? '#efc573' : '#fff'} opacity=".4" /><path d="M12 0h2v20h-2z" fill="#fff" opacity=".65" /><path d="M0 1 20 16" stroke="#fff" strokeOpacity=".4" /></>}
-        {item.material === 'Ceramic' && <><path d="M2 0q-3 10 0 20" fill="none" stroke="#fff" strokeOpacity=".65" strokeWidth="3" /><circle cx="13" cy="6" r=".7" fill={accent} opacity=".35" /></>}
-        {['Concrete', 'Cork'].includes(item.material) && <g fill={accent} opacity=".3"><circle cx="3" cy="6" r={item.material === 'Cork' ? 2 : .8} /><circle cx="12" cy="13" r="1.5" /><path d="m7 18 2-4 3 4m3-15 4 3-3 2" /></g>}
-        {item.pattern === 'Stripes' && <path d="M5 0v20m10-20v20" stroke={accent} strokeWidth="4" strokeOpacity=".6" />}
-        {item.pattern === 'Checks' && <g fill={accent} opacity=".55"><rect width="10" height="10" /><rect x="10" y="10" width="10" height="10" /></g>}
-        {item.pattern === 'Dots' && <circle cx="10" cy="10" r="3" fill={accent} opacity=".7" />}
-      </g>
-      <pattern id={`surface-${id}`} width="20" height="20" patternUnits="userSpaceOnUse">
-        <rect width="20" height="20" fill={color} /><use href={`#texture-${id}`} />
-      </pattern>
-      <pattern id={`accent-${id}`} width="20" height="20" patternUnits="userSpaceOnUse">
-        <rect width="20" height="20" fill={accent} /><use href={`#texture-${id}`} />
-      </pattern>
-    </defs>
+    <MaterialDefs id={id} material={item.material} color={color} accent={accent} pattern={item.pattern} />
     <g stroke={accent} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round" data-material={item.material} data-role={furnishingRole(kind)}>{artwork}</g>
   </svg>;
 }
